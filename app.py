@@ -1,12 +1,29 @@
-from flask import Flask, request, jsonify
+from fastapi import FastAPI
+from pydantic import BaseModel
+import scripts.transcribe as transcribe_script
 
-app = Flask(__name__)
+app = FastAPI()
 
-@app.route('/receive', methods=['POST'])
-def receive():
-    data = request.json
-    print("📥 Получены данные:", data)
-    return jsonify({"status": "ok", "message": "Данные получены!"})
+class TranscribeRequest(BaseModel):
+    input_path: str
+    output_path: str = "output.srt"
+    model_size: str = "small"
 
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=10000)
+@app.post("/transcribe")
+def transcribe_endpoint(request: TranscribeRequest):
+    # Вызываем функцию транскрибации из твоего скрипта
+    transcribe_script.transcribe_to_srt(
+        input_path=request.input_path,
+        output_path=request.output_path,
+        model_size=request.model_size
+    )
+
+    # Читаем результат и возвращаем содержимое SRT
+    with open(request.output_path, "r", encoding="utf-8") as f:
+        srt_data = f.read()
+
+    return {
+        "status": "success",
+        "output_path": request.output_path,
+        "srt": srt_data
+    }
