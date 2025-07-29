@@ -2,11 +2,7 @@ from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 import os
 
-# Импорт функции транскрибации из scripts/transcribe.py
-try:
-    from scripts.transcribe import transcribe_to_srt
-except ImportError as e:
-    raise ImportError(f"Cannot import transcribe_to_srt: {e}")
+from scripts.transcribe import transcribe_to_srt
 
 app = FastAPI()
 
@@ -17,7 +13,6 @@ class TranscribeRequest(BaseModel):
 
 @app.post("/transcribe")
 async def transcribe_endpoint(request: TranscribeRequest):
-    # Запуск транскрибации
     try:
         transcribe_to_srt(
             input_path=request.input_path,
@@ -27,11 +22,9 @@ async def transcribe_endpoint(request: TranscribeRequest):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Transcription error: {e}")
 
-    # Проверяем наличие SRT файла
     if not os.path.isfile(request.output_path):
         raise HTTPException(status_code=404, detail=f"SRT file not found: {request.output_path}")
 
-    # Читаем результат и возвращаем содержимое SRT
     try:
         with open(request.output_path, "r", encoding="utf-8") as f:
             srt_data = f.read()
