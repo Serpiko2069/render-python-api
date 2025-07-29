@@ -1,1 +1,14 @@
+fastapi
+uvicorn
+pydantic
+requests
 flask
+openai-whisper
+torch
+numpy
+tqdm
+wasp-asr           # Если будем использовать WASP для ASR (распознавания)
+google-api-python-client
+gspread
+sentence-transformers
+python-dotenv
